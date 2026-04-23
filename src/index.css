@@ -1,25 +1,26 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Playfair+Display:ital,wght@1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chewy&family=Quicksand:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", system-ui, -apple-system, sans-serif;
-  --font-title: "Outfit", sans-serif;
-  --font-logo: "Playfair Display", serif;
+  --font-sans: "Poppins", system-ui, -apple-system, sans-serif;
+  --font-title: "Chewy", cursive;
+  --font-slogan: "Quicksand", sans-serif;
   
-  --color-aymar-cyan: #00B4D8;
-  --color-aymar-red: #FE2C55;
-  --color-aymar-dark: #1A1A1A;
-  --color-aymar-bg: #FFFFFF;
+  --color-isla-teal: #13A6B5;
+  --color-isla-orange: #F5A623;
+  --color-isla-dark: #333333;
+  --color-isla-bg: #FFFFFF;
   
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(255, 255, 255, 0.18);
+  --shadow-glass: 0 8px 32px 0 rgba(19, 166, 181, 0.10);
+  --glass-bg: rgba(255, 255, 255, 0.92);
+  --glass-border: rgba(255, 255, 255, 0.25);
 }
 
 body {
-  background-color: #fafbfc;
-  color: #1A1A1A;
+  background-color: #f7fafa;
+  color: #333333;
   -webkit-font-smoothing: antialiased;
+  font-family: "Poppins", sans-serif;
 }
 
 .glass {
@@ -61,29 +62,35 @@ body {
   100% { background-position: 200% 0; }
 }
 
-/* Dish image professional background treatment */
-.dish-img-container {
-  background: radial-gradient(circle at 50% 60%, #e8f8fa 0%, #b8e8ef 40%, #0d94a6 100%);
-  position: relative;
-  overflow: hidden;
+/* Wave decoration for sections */
+@keyframes wave {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
 }
 
-.dish-img-container::before {
+.wave-icon {
+  animation: wave 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+/* Subtle pulse for prices */
+@keyframes pricePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.85; }
+}
+
+/* Category header underline animation */
+.category-underline {
+  position: relative;
+}
+
+.category-underline::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 120, 144, 0.25) 100%);
-  z-index: 1;
-  pointer-events: none;
-}
-
-.dish-img-container img {
-  position: relative;
-  z-index: 2;
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
-  transition: transform 0.3s ease;
-}
-
-.dish-img-container:hover img {
-  transform: scale(1.05);
+  bottom: -4px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #13A6B5, #F5A623);
+  border-radius: 2px;
 }

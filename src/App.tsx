@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, Instagram, Twitter } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, Instagram, Twitter, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 const WHATSAPP_NUMBER = "51923494953";
@@ -11,6 +11,7 @@ const WHATSAPP_NUMBER = "51923494953";
 interface Dish {
   nombre: string;
   descripcion?: string;
+  imagen?: string;
   precio: string;
 }
 
@@ -27,11 +28,11 @@ const menuCategories: Category[] = [
     nombre: "Entradas",
     slogan: "Frescura que conquista",
     items: [
-      { nombre: "Leche de tigre de pescado", precio: "S/.18.00" },
-      { nombre: "Leche de tigre mixto", descripcion: "Pescado y mariscos", precio: "S/.22.00" },
-      { nombre: "Leche de pantera", precio: "S/.22.00" },
-      { nombre: "Causa pulpa de langostinos", precio: "S/.22.00" },
-      { nombre: "Causa acevichada", precio: "S/.25.00" },
+      { nombre: "Leche de tigre de pescado", imagen: "Leche de tigre.jpg", precio: "S/.18.00" },
+      { nombre: "Leche de tigre mixto", descripcion: "Pescado y mariscos", imagen: "leche de tigre mixta.png", precio: "S/.22.00" },
+      { nombre: "Leche de pantera", imagen: "leche de pantera.jpeg", precio: "S/.22.00" },
+      { nombre: "Causa pulpa de langostinos", imagen: "Causa pulpa de langostinos.jpeg", precio: "S/.22.00" },
+      { nombre: "Causa acevichada", imagen: "Causa acevichada.jpeg", precio: "S/.25.00" },
     ]
   },
   {
@@ -39,11 +40,11 @@ const menuCategories: Category[] = [
     nombre: "Ceviches",
     slogan: "El que no pica, no enamora",
     items: [
-      { nombre: "Ceviche carretillero", precio: "S/.28.00" },
-      { nombre: "Ceviche de pescado del día", precio: "S/.27.00" },
-      { nombre: "Ceviche mixto", precio: "S/.34.00" },
-      { nombre: "Ceviche afrodisíaco", precio: "S/.35.00" },
-      { nombre: "Ceviche de conchas negras", precio: "S/.35.00" },
+      { nombre: "Ceviche carretillero", imagen: "Ceviche carretillero.jpeg", precio: "S/.28.00" },
+      { nombre: "Ceviche de pescado del día", imagen: "Ceviche de pescado del día.jpeg", precio: "S/.27.00" },
+      { nombre: "Ceviche mixto", imagen: "Ceviche mixto.jpg", precio: "S/.34.00" },
+      { nombre: "Ceviche afrodisíaco", imagen: "Ceviche afrodisíaco.jpeg", precio: "S/.35.00" },
+      { nombre: "Ceviche de conchas negras", imagen: "Ceviche de conchas negras.jpeg", precio: "S/.35.00" },
     ]
   },
   {
@@ -51,8 +52,8 @@ const menuCategories: Category[] = [
     nombre: "Tiraditos",
     slogan: "Sabor que se desliza",
     items: [
-      { nombre: "Tiradito en salsa de ají amarillo", precio: "S/.28.00" },
-      { nombre: "Tiradito en dos tiempos", precio: "S/.32.00" },
+      { nombre: "Tiradito en salsa de ají amarillo", imagen: "Tiradito en salsa de ají amarillo.jpg", precio: "S/.28.00" },
+      { nombre: "Tiradito en dos tiempos", imagen: "Tiradito en dos tiempos.jpeg", precio: "S/.32.00" },
     ]
   },
   {
@@ -60,7 +61,7 @@ const menuCategories: Category[] = [
     nombre: "Combinado Norteño",
     slogan: "Lo mejor del norte",
     items: [
-      { nombre: "Combinado norteño", descripcion: "Ceviche de pescado del día + arroz con mariscos o chaufa de mariscos o jalea mixta", precio: "S/.35.00" },
+      { nombre: "Combinado norteño", descripcion: "Ceviche de pescado del día + arroz con mariscos o chaufa de mariscos o jalea mixta", imagen: "Combinado norteño.webp", precio: "S/.35.00" },
     ]
   },
   {
@@ -68,12 +69,12 @@ const menuCategories: Category[] = [
     nombre: "Sudados y Parihuelas",
     slogan: "El caldito que cura penas",
     items: [
-      { nombre: "Sudado de filete", precio: "S/.30.00" },
-      { nombre: "Sudado de cabrilla", precio: "S/.32.00" },
-      { nombre: "Parihuela mixta especial", precio: "S/.35.00" },
-      { nombre: "Parihuela de cabrilla", precio: "S/.32.00" },
-      { nombre: "Parihuela de filete", precio: "S/.30.00" },
-      { nombre: "Chilcano especial", precio: "S/.20.00" },
+      { nombre: "Sudado de filete", imagen: "Sudado de filete.jpg", precio: "S/.30.00" },
+      { nombre: "Sudado de cabrilla", imagen: "Sudado de cabrilla.jpeg", precio: "S/.32.00" },
+      { nombre: "Parihuela mixta especial", imagen: "Parihuela mixta especial.webp", precio: "S/.35.00" },
+      { nombre: "Parihuela de cabrilla", imagen: "Parihuela de cabrilla.jpeg", precio: "S/.32.00" },
+      { nombre: "Parihuela de filete", imagen: "Parihuela de filete.jpeg", precio: "S/.30.00" },
+      { nombre: "Chilcano especial", imagen: "Chilcano especial.webp", precio: "S/.20.00" },
     ]
   },
   {
@@ -81,9 +82,9 @@ const menuCategories: Category[] = [
     nombre: "Chupes",
     slogan: "Tradición en cada cucharada",
     items: [
-      { nombre: "Chupe de pescado", precio: "S/.30.00" },
-      { nombre: "Chupe de cangrejo", precio: "S/.30.00" },
-      { nombre: "Chupe de langostino", precio: "S/.30.00" },
+      { nombre: "Chupe de pescado", imagen: "Chupe de pescado.webp", precio: "S/.30.00" },
+      { nombre: "Chupe de cangrejo", imagen: "Chupe de cangrejo.jpeg", precio: "S/.30.00" },
+      { nombre: "Chupe de langostino", imagen: "Chupe de langostino.jpeg", precio: "S/.30.00" },
     ]
   },
   {
@@ -91,14 +92,14 @@ const menuCategories: Category[] = [
     nombre: "Trilogías Marinas",
     slogan: "Tres sabores, una experiencia",
     items: [
-      { nombre: "Trilogía N° 1", descripcion: "Ceviche de pescado + arroz con mariscos + chicharrón mixto", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 2", descripcion: "Ceviche de pescado + causa de langostinos + chicharrón mixto", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 3", descripcion: "Causa de langostinos + chicharrón de pescado + arroz con mariscos", precio: "S/.43.00" },
-      { nombre: "Trilogía N° 4", descripcion: "Ceviche de pescado + chicharrón de calamar + arroz con mariscos", precio: "S/.45.00" },
-      { nombre: "Trilogía N° 5", descripcion: "Causa de langostinos + ceviche de pescado + arroz con mariscos", precio: "S/.40.00" },
-      { nombre: "Trilogía N° 6", descripcion: "Causa de langostinos + chaufa de mariscos + chicharrón de pescado", precio: "S/.43.00" },
-      { nombre: "Trilogía N° 7", descripcion: "Ceviche de pescado + chaufa de mariscos + chicharrón mixto", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 8", descripcion: "Ceviche de pescado + papa a la huancaína + arroz con pato", precio: "S/.45.00" },
+      { nombre: "Trilogía N° 1", descripcion: "Ceviche de pescado + arroz con mariscos + chicharrón mixto", imagen: "trilogia 1.webp", precio: "S/.38.00" },
+      { nombre: "Trilogía N° 2", descripcion: "Ceviche de pescado + causa de langostinos + chicharrón mixto", imagen: "trilogia 2.jpg", precio: "S/.38.00" },
+      { nombre: "Trilogía N° 3", descripcion: "Causa de langostinos + chicharrón de pescado + arroz con mariscos", imagen: "trilogia 3.jpeg", precio: "S/.43.00" },
+      { nombre: "Trilogía N° 4", descripcion: "Ceviche de pescado + chicharrón de calamar + arroz con mariscos", imagen: "trilogia 4.jpg", precio: "S/.45.00" },
+      { nombre: "Trilogía N° 5", descripcion: "Causa de langostinos + ceviche de pescado + arroz con mariscos", imagen: "trilogia 5.jpeg", precio: "S/.40.00" },
+      { nombre: "Trilogía N° 6", descripcion: "Causa de langostinos + chaufa de mariscos + chicharrón de pescado", imagen: "trilogia 6.jpeg", precio: "S/.43.00" },
+      { nombre: "Trilogía N° 7", descripcion: "Ceviche de pescado + chaufa de mariscos + chicharrón mixto", imagen: "trologia 7.png", precio: "S/.38.00" },
+      { nombre: "Trilogía N° 8", descripcion: "Ceviche de pescado + papa a la huancaína + arroz con pato", imagen: "trilogia 8.jpg", precio: "S/.45.00" },
     ]
   },
   {
@@ -106,17 +107,17 @@ const menuCategories: Category[] = [
     nombre: "Duos Marinos",
     slogan: "La pareja perfecta del mar",
     items: [
-      { nombre: "Duo Marino 1", descripcion: "Ceviche de pescado del día + causa de pulpa de langostino", precio: "S/.30.00" },
-      { nombre: "Duo Marino 2", descripcion: "Causa de pulpa de langostino + arroz con mariscos", precio: "S/.32.00" },
-      { nombre: "Duo Marino 3", descripcion: "Causa de pulpa de langostino + chicharrón de pescado", precio: "S/.32.00" },
-      { nombre: "Duo Marino 4", descripcion: "Ceviche de pescado + chicharrón de calamar", precio: "S/.35.00" },
-      { nombre: "Duo Marino 5", descripcion: "Causa de pulpa de langostino + chaufa de mariscos", precio: "S/.32.00" },
-      { nombre: "Duo Marino 6", descripcion: "Ceviche de pescado del día + arroz con mariscos", precio: "S/.30.00" },
-      { nombre: "Duo Marino 7", descripcion: "Ceviche de pescado del día + chicharrón mixto", precio: "S/.30.00" },
-      { nombre: "Duo Marino 8", descripcion: "Chicharrón de pescado + arroz con mariscos", precio: "S/.32.00" },
-      { nombre: "Duo Marino 9", descripcion: "Chicharrón de pescado + chaufa de mariscos", precio: "S/.32.00" },
-      { nombre: "Duo Marino 10", descripcion: "Ceviche de pescado del día + chaufa de mariscos", precio: "S/.30.00" },
-      { nombre: "Duo Marino 11", descripcion: "Ceviche de pescado del día + arroz con pato", precio: "S/.35.00" },
+      { nombre: "Duo Marino 1", descripcion: "Ceviche de pescado del día + causa de pulpa de langostino", imagen: "Duo Marino 1.jpeg", precio: "S/.30.00" },
+      { nombre: "Duo Marino 2", descripcion: "Causa de pulpa de langostino + arroz con mariscos", imagen: "Duo Marino 2.jpeg", precio: "S/.32.00" },
+      { nombre: "Duo Marino 3", descripcion: "Causa de pulpa de langostino + chicharrón de pescado", imagen: "Duo Marino 3.jpeg", precio: "S/.32.00" },
+      { nombre: "Duo Marino 4", descripcion: "Ceviche de pescado + chicharrón de calamar", imagen: "Duo Marino 4.jpeg", precio: "S/.35.00" },
+      { nombre: "Duo Marino 5", descripcion: "Causa de pulpa de langostino + chaufa de mariscos", imagen: "Duo Marino 5.webp", precio: "S/.32.00" },
+      { nombre: "Duo Marino 6", descripcion: "Ceviche de pescado del día + arroz con mariscos", imagen: "duo marino 6.png", precio: "S/.30.00" },
+      { nombre: "Duo Marino 7", descripcion: "Ceviche de pescado del día + chicharrón mixto", imagen: "Duo Marino 7.jpeg", precio: "S/.30.00" },
+      { nombre: "Duo Marino 8", descripcion: "Chicharrón de pescado + arroz con mariscos", imagen: "Duo Marino 8.jpeg", precio: "S/.32.00" },
+      { nombre: "Duo Marino 9", descripcion: "Chicharrón de pescado + chaufa de mariscos", imagen: "Duo Marino 9.jpeg", precio: "S/.32.00" },
+      { nombre: "Duo Marino 10", descripcion: "Ceviche de pescado del día + chaufa de mariscos", imagen: "Duo Marino 10.jpeg", precio: "S/.30.00" },
+      { nombre: "Duo Marino 11", descripcion: "Ceviche de pescado del día + arroz con pato", imagen: "Duo Marino 11.jpeg", precio: "S/.35.00" },
     ]
   },
   {
@@ -124,14 +125,14 @@ const menuCategories: Category[] = [
     nombre: "Chicharrones y Jaleas",
     slogan: "Crujientes del océano",
     items: [
-      { nombre: "Chicharrón de pota", precio: "S/.30.00" },
-      { nombre: "Chicharrón de pescado", precio: "S/.30.00" },
-      { nombre: "Jalea de pescado", precio: "S/.32.00" },
-      { nombre: "Chicharrón de calamar", precio: "S/.40.00" },
-      { nombre: "Chicharrón de pescado con calamar", precio: "S/.40.00" },
-      { nombre: "Chicharrón mixto", precio: "S/.34.00" },
-      { nombre: "Jalea mixta", precio: "S/.34.00" },
-      { nombre: "Jaleón norteño", descripcion: "Cabrilla frita, mariscos fritos, yuca frita, leche de tigre", precio: "S/.45.00" },
+      { nombre: "Chicharrón de pota", imagen: "Chicharrón de pota.jpeg", precio: "S/.30.00" },
+      { nombre: "Chicharrón de pescado", imagen: "Chicharrón de pescado.jpeg", precio: "S/.30.00" },
+      { nombre: "Jalea de pescado", imagen: "Jalea de pescado.jpeg", precio: "S/.32.00" },
+      { nombre: "Chicharrón de calamar", imagen: "Chicharrón de calamar.webp", precio: "S/.40.00" },
+      { nombre: "Chicharrón de pescado con calamar", imagen: "Chicharrón de pescado con calamar.webp", precio: "S/.40.00" },
+      { nombre: "Chicharrón mixto", imagen: "Chicharrón mixto.webp", precio: "S/.34.00" },
+      { nombre: "Jalea mixta", imagen: "Jalea mixta.jpeg", precio: "S/.34.00" },
+      { nombre: "Jaleón norteño", descripcion: "Cabrilla frita, mariscos fritos, yuca frita, leche de tigre", imagen: "Jaleón norteño.jpeg", precio: "S/.45.00" },
     ]
   },
   {
@@ -139,15 +140,15 @@ const menuCategories: Category[] = [
     nombre: "Arroces",
     slogan: "El grano que enamora",
     items: [
-      { nombre: "Arroz con conchas negras", precio: "S/.35.00" },
-      { nombre: "Arroz con mariscos", precio: "S/.32.00" },
-      { nombre: "Chaufa de mariscos", precio: "S/.32.00" },
-      { nombre: "Chaufa de pescado", precio: "S/.28.00" },
-      { nombre: "Chaufa amazónico", precio: "S/.28.00" },
-      { nombre: "Chaufa de langostinos", precio: "S/.30.00" },
-      { nombre: "Arroz verde en aroma de pato con filete de pescado", precio: "S/.27.00" },
-      { nombre: "Chaufa de carne", precio: "S/.24.00" },
-      { nombre: "Chaufa de pollo", precio: "S/.22.00" },
+      { nombre: "Arroz con conchas negras", imagen: "Arroz con conchas negras.webp", precio: "S/.35.00" },
+      { nombre: "Arroz con mariscos", imagen: "Arroz con mariscos.jpg", precio: "S/.32.00" },
+      { nombre: "Chaufa de mariscos", imagen: "Chaufa de mariscos.webp", precio: "S/.32.00" },
+      { nombre: "Chaufa de pescado", imagen: "Chaufa de pescado.jpeg", precio: "S/.28.00" },
+      { nombre: "Chaufa amazónico", imagen: "Chaufa amazónico.jpeg", precio: "S/.28.00" },
+      { nombre: "Chaufa de langostinos", imagen: "Chaufa de langostinos.jpg", precio: "S/.30.00" },
+      { nombre: "Arroz verde en aroma de pato con filete de pescado", imagen: "Arroz verde en aroma de pato con filete de pescado.jpeg", precio: "S/.27.00" },
+      { nombre: "Chaufa de carne", imagen: "Chaufa de carne.jpeg", precio: "S/.24.00" },
+      { nombre: "Chaufa de pollo", imagen: "Chaufa de pollo.webp", precio: "S/.22.00" },
     ]
   },
   {
@@ -155,7 +156,7 @@ const menuCategories: Category[] = [
     nombre: "Ronda Marina para 4 Personas",
     slogan: "Para compartir en familia",
     items: [
-      { nombre: "Ronda marina para 4 personas", descripcion: "Ceviche de pescado + arroz con mariscos + chaufa de mariscos + chicharrón mixto + leche de tigre o causa de pulpa de langostino", precio: "S/.73.00" },
+      { nombre: "Ronda marina para 4 personas", descripcion: "Ceviche de pescado + arroz con mariscos + chaufa de mariscos + chicharrón mixto + leche de tigre o causa de pulpa de langostino", imagen: "Ronda marina para 4 personas.webp", precio: "S/.73.00" },
     ]
   },
   {
@@ -163,11 +164,11 @@ const menuCategories: Category[] = [
     nombre: "Fetuccinis",
     slogan: "Pastas con alma marina",
     items: [
-      { nombre: "Fetuccini a la huancaína con lomo saltado", precio: "S/.30.00" },
-      { nombre: "Fetuccini a la huancaína con pollo a la parrilla", precio: "S/.26.00" },
-      { nombre: "Fetuccini a la huancaína con saltado de pollo", precio: "S/.26.00" },
-      { nombre: "Fetuccini a la huancaína con filete de pescado", precio: "S/.27.00" },
-      { nombre: "Fetuccini a la huancaína con salsa de mariscos", precio: "S/.35.00" },
+      { nombre: "Fetuccini a la huancaína con lomo saltado", imagen: "Fetuccini a la huancaína con lomo saltado.jpeg", precio: "S/.30.00" },
+      { nombre: "Fetuccini a la huancaína con pollo a la parrilla", imagen: "Fetuccini a la huancaína con pollo a la parrilla.jpeg", precio: "S/.26.00" },
+      { nombre: "Fetuccini a la huancaína con saltado de pollo", imagen: "Fetuccini a la huancaína con saltado de pollo.jpeg", precio: "S/.26.00" },
+      { nombre: "Fetuccini a la huancaína con filete de pescado", imagen: "Fetuccini a la huancaína con filete de pescado.jpeg", precio: "S/.27.00" },
+      { nombre: "Fetuccini a la huancaína con salsa de mariscos", imagen: "Fetuccini a la huancaína con salsa de mariscos.jpeg", precio: "S/.35.00" },
     ]
   },
   {
@@ -175,15 +176,15 @@ const menuCategories: Category[] = [
     nombre: "Criollos y Norteños",
     slogan: "Sazón de la tierra",
     items: [
-      { nombre: "Arroz con pato", precio: "S/.27.00" },
-      { nombre: "Seco de pato con frijoles", precio: "S/.28.00" },
-      { nombre: "Tacu-tacu con lomo saltado", precio: "S/.33.00" },
-      { nombre: "Tacu-tacu saltado de pollo", precio: "S/.30.00" },
-      { nombre: "Tacu-tacu en salsa de mariscos", precio: "S/.35.00" },
-      { nombre: "Lomo saltado", precio: "S/.25.00" },
-      { nombre: "Saltado de pollo", precio: "S/.23.00" },
-      { nombre: "Tallarín saltado de carne", precio: "S/.25.00" },
-      { nombre: "Tallarín saltado de pollo", precio: "S/.23.00" },
+      { nombre: "Arroz con pato", imagen: "Arroz con pato.webp", precio: "S/.27.00" },
+      { nombre: "Seco de pato con frijoles", imagen: "Seco de pato con frijoles.webp", precio: "S/.28.00" },
+      { nombre: "Tacu-tacu con lomo saltado", imagen: "Tacu-tacu con lomo saltado.jpeg", precio: "S/.33.00" },
+      { nombre: "Tacu-tacu saltado de pollo", imagen: "Tacu-tacu saltado de pollo.webp", precio: "S/.30.00" },
+      { nombre: "Tacu-tacu en salsa de mariscos", imagen: "Tacu-tacu en salsa de mariscos.jpeg", precio: "S/.35.00" },
+      { nombre: "Lomo saltado", imagen: "Lomo saltado.jpg", precio: "S/.25.00" },
+      { nombre: "Saltado de pollo", imagen: "Saltado de pollo.webp", precio: "S/.23.00" },
+      { nombre: "Tallarín saltado de carne", imagen: "Tallarín saltado de carne.jpeg", precio: "S/.25.00" },
+      { nombre: "Tallarín saltado de pollo", imagen: "Tallarín saltado de pollo.jpeg", precio: "S/.23.00" },
     ]
   },
   {
@@ -191,8 +192,8 @@ const menuCategories: Category[] = [
     nombre: "Pescado Frito y Filete",
     slogan: "Directo del mar a tu mesa",
     items: [
-      { nombre: "Cabrilla frita con yucas, arroz y ensalada", precio: "S/.32.00" },
-      { nombre: "Filete de pescado frito con yucas, arroz y ensalada", precio: "S/.27.00" },
+      { nombre: "Cabrilla frita con yucas, arroz y ensalada", imagen: "Cabrilla frita con yucas, arroz y ensalada.webp", precio: "S/.32.00" },
+      { nombre: "Filete de pescado frito con yucas, arroz y ensalada", imagen: "Filete de pescado frito con yucas, arroz y ensalada.jpeg", precio: "S/.27.00" },
     ]
   },
 ];
@@ -280,18 +281,31 @@ export default function App() {
           <span className="font-slogan text-[11px] text-isla-orange font-bold tracking-wider mt-0.5">Sabor que atrapa</span>
         </div>
 
-        <motion.div
-          onClick={() => cartCount > 0 && setShowSummary(true)}
-          whileTap={{ scale: 0.95 }}
-          className="w-11 h-11 bg-isla-teal/10 rounded-full flex items-center justify-center relative cursor-pointer"
-        >
-          <ShoppingBag size={22} className="text-isla-teal" />
-          {cartCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-isla-orange text-white rounded-full text-[10px] font-bold flex items-center justify-center px-1">
-              {cartCount}
-            </span>
-          )}
-        </motion.div>
+        <div className="flex items-center gap-2">
+          {/* Location Button */}
+          <motion.a
+            href="https://maps.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileTap={{ scale: 0.95 }}
+            className="w-11 h-11 bg-isla-teal/10 rounded-full flex items-center justify-center text-isla-teal cursor-pointer"
+          >
+            <MapPin size={22} />
+          </motion.a>
+
+          <motion.div
+            onClick={() => cartCount > 0 && setShowSummary(true)}
+            whileTap={{ scale: 0.95 }}
+            className="w-11 h-11 bg-isla-teal/10 rounded-full flex items-center justify-center relative cursor-pointer"
+          >
+            <ShoppingBag size={22} className="text-isla-teal" />
+            {cartCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[20px] h-5 bg-isla-orange text-white rounded-full text-[10px] font-bold flex items-center justify-center px-1">
+                {cartCount}
+              </span>
+            )}
+          </motion.div>
+        </div>
       </header>
 
       {/* ─── MARQUEE ─── */}
@@ -363,9 +377,13 @@ export default function App() {
                   whileHover={{ y: -4 }}
                   className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:border-isla-teal/30 hover:shadow-md transition-all duration-200"
                 >
-                  {/* Image Placeholder */}
-                  <div className="bg-gray-100 aspect-[4/3] flex items-center justify-center relative">
-                    <span className="text-gray-400 text-[11px] uppercase tracking-wider font-semibold">Acá va imagen</span>
+                  {/* Dish Image */}
+                  <div className="bg-gray-100 aspect-[4/3] flex items-center justify-center relative overflow-hidden">
+                    {dish.imagen ? (
+                      <img src={`/${dish.imagen}`} alt={dish.nombre} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-gray-400 text-[11px] uppercase tracking-wider font-semibold">Acá va imagen</span>
+                    )}
                   </div>
                   
                   {/* Dish info */}
@@ -399,6 +417,7 @@ export default function App() {
                 </motion.div>
               ))}
             </div>
+            <p className="text-[10px] text-gray-400 text-center italic mt-4">* Todas las imágenes son referenciales</p>
           </section>
         ))}
 

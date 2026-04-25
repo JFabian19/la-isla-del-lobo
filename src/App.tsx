@@ -1,12 +1,88 @@
-import React, { useState, useMemo } from 'react';
-import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, Instagram, Twitter, MapPin } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, Instagram, Twitter, MapPin, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { fetchSheetData, SheetDish, SheetCategory } from './services/googleSheets';
 
 const WHATSAPP_NUMBER = "51923494953";
 
-/* ═══════════════════════════════════════════
-   MENU DATA — La Isla del Lobo
-   ═══════════════════════════════════════════ */
+// Mapa de imágenes locales por defecto para platos conocidos
+const LOCAL_IMAGES: Record<string, string> = {
+  "Leche de tigre de pescado": "Leche de tigre.jpg",
+  "Leche de tigre mixto": "leche de tigre mixta.png",
+  "Leche de pantera": "leche de pantera.jpeg",
+  "Causa pulpa de langostinos": "Causa pulpa de langostinos.jpeg",
+  "Causa acevichada": "Causa acevichada.jpeg",
+  "Ceviche carretillero": "Ceviche carretillero.jpeg",
+  "Ceviche de pescado del día": "Ceviche de pescado del día.jpeg",
+  "Ceviche mixto": "Ceviche mixto.jpg",
+  "Ceviche afrodisíaco": "Ceviche afrodisíaco.jpeg",
+  "Ceviche de conchas negras": "Ceviche de conchas negras.jpeg",
+  "Tiradito en salsa de ají amarillo": "Tiradito en salsa de ají amarillo.jpg",
+  "Tiradito en dos tiempos": "Tiradito en dos tiempos.jpeg",
+  "Combinado norteño": "Combinado norteño.webp",
+  "Sudado de filete": "Sudado de filete.jpg",
+  "Sudado de cabrilla": "Sudado de cabrilla.jpeg",
+  "Parihuela mixta especial": "Parihuela mixta especial.webp",
+  "Parihuela de cabrilla": "Parihuela de cabrilla.jpeg",
+  "Parihuela de filete": "Parihuela de filete.jpeg",
+  "Chilcano especial": "Chilcano especial.webp",
+  "Chupe de pescado": "Chupe de pescado.webp",
+  "Chupe de cangrejo": "Chupe de cangrejo.jpeg",
+  "Chupe de langostino": "Chupe de langostino.jpeg",
+  "Trilogía N° 1": "trilogia 1.webp",
+  "Trilogía N° 2": "trilogia 2.jpg",
+  "Trilogía N° 3": "trilogia 3.jpeg",
+  "Trilogía N° 4": "trilogia 4.jpg",
+  "Trilogía N° 5": "trilogia 5.jpeg",
+  "Trilogía N° 6": "trilogia 6.jpeg",
+  "Trilogía N° 7": "trologia 7.png",
+  "Trilogía N° 8": "trilogia 8.jpg",
+  "Duo Marino 1": "Duo Marino 1.jpeg",
+  "Duo Marino 2": "Duo Marino 2.jpeg",
+  "Duo Marino 3": "Duo Marino 3.jpeg",
+  "Duo Marino 4": "Duo Marino 4.jpeg",
+  "Duo Marino 5": "Duo Marino 5.webp",
+  "Duo Marino 6": "duo marino 6.png",
+  "Duo Marino 7": "Duo Marino 7.jpeg",
+  "Duo Marino 8": "Duo Marino 8.jpeg",
+  "Duo Marino 9": "Duo Marino 9.jpeg",
+  "Duo Marino 10": "Duo Marino 10.jpeg",
+  "Duo Marino 11": "Duo Marino 11.jpeg",
+  "Chicharrón de pota": "Chicharrón de pota.jpeg",
+  "Chicharrón de pescado": "Chicharrón de pescado.jpeg",
+  "Jalea de pescado": "Jalea de pescado.jpeg",
+  "Chicharrón de calamar": "Chicharrón de calamar.webp",
+  "Chicharrón de pescado con calamar": "Chicharrón de pescado con calamar.webp",
+  "Chicharrón mixto": "Chicharrón mixto.webp",
+  "Jalea mixta": "Jalea mixta.jpeg",
+  "Jaleón norteño": "Jaleón norteño.jpeg",
+  "Arroz con conchas negras": "Arroz con conchas negras.webp",
+  "Arroz con mariscos": "Arroz con mariscos.jpg",
+  "Chaufa de mariscos": "Chaufa de mariscos.webp",
+  "Chaufa de pescado": "Chaufa de pescado.jpeg",
+  "Chaufa amazónico": "Chaufa amazónico.jpeg",
+  "Chaufa de langostinos": "Chaufa de langostinos.jpg",
+  "Arroz verde en aroma de pato con filete de pescado": "Arroz verde en aroma de pato con filete de pescado.jpeg",
+  "Chaufa de carne": "Chaufa de carne.jpeg",
+  "Chaufa de pollo": "Chaufa de pollo.webp",
+  "Ronda marina para 4 personas": "Ronda marina para 4 personas.webp",
+  "Fetuccini a la huancaína con lomo saltado": "Fetuccini a la huancaína con lomo saltado.jpeg",
+  "Fetuccini a la huancaína con pollo a la parrilla": "Fetuccini a la huancaína con pollo a la parrilla.jpeg",
+  "Fetuccini a la huancaína con saltado de pollo": "Fetuccini a la huancaína con saltado de pollo.jpeg",
+  "Fetuccini a la huancaína con filete de pescado": "Fetuccini a la huancaína con filete de pescado.jpeg",
+  "Fetuccini a la huancaína con salsa de mariscos": "Fetuccini a la huancaína con salsa de mariscos.jpeg",
+  "Arroz con pato": "Arroz con pato.webp",
+  "Seco de pato con frijoles": "Seco de pato con frijoles.webp",
+  "Tacu-tacu con lomo saltado": "Tacu-tacu con lomo saltado.jpeg",
+  "Tacu-tacu saltado de pollo": "Tacu-tacu saltado de pollo.webp",
+  "Tacu-tacu en salsa de mariscos": "Tacu-tacu en salsa de mariscos.jpeg",
+  "Lomo saltado": "Lomo saltado.jpg",
+  "Saltado de pollo": "Saltado de pollo.webp",
+  "Tallarín saltado de carne": "Tallarín saltado de carne.jpeg",
+  "Tallarín saltado de pollo": "Tallarín saltado de pollo.jpeg",
+  "Cabrilla frita con yucas, arroz y ensalada": "Cabrilla frita con yucas, arroz y ensalada.webp",
+  "Filete de pescado frito con yucas, arroz y ensalada": "Filete de pescado frito con yucas, arroz y ensalada.jpeg",
+};
 
 interface Dish {
   nombre: string;
@@ -18,189 +94,8 @@ interface Dish {
 interface Category {
   id: string;
   nombre: string;
-  slogan?: string;
   items: Dish[];
 }
-
-const menuCategories: Category[] = [
-  {
-    id: "entradas",
-    nombre: "Entradas",
-    slogan: "Frescura que conquista",
-    items: [
-      { nombre: "Leche de tigre de pescado", imagen: "Leche de tigre.jpg", precio: "S/.18.00" },
-      { nombre: "Leche de tigre mixto", descripcion: "Pescado y mariscos", imagen: "leche de tigre mixta.png", precio: "S/.22.00" },
-      { nombre: "Leche de pantera", imagen: "leche de pantera.jpeg", precio: "S/.22.00" },
-      { nombre: "Causa pulpa de langostinos", imagen: "Causa pulpa de langostinos.jpeg", precio: "S/.22.00" },
-      { nombre: "Causa acevichada", imagen: "Causa acevichada.jpeg", precio: "S/.25.00" },
-    ]
-  },
-  {
-    id: "ceviches",
-    nombre: "Ceviches",
-    slogan: "El que no pica, no enamora",
-    items: [
-      { nombre: "Ceviche carretillero", imagen: "Ceviche carretillero.jpeg", precio: "S/.28.00" },
-      { nombre: "Ceviche de pescado del día", imagen: "Ceviche de pescado del día.jpeg", precio: "S/.27.00" },
-      { nombre: "Ceviche mixto", imagen: "Ceviche mixto.jpg", precio: "S/.34.00" },
-      { nombre: "Ceviche afrodisíaco", imagen: "Ceviche afrodisíaco.jpeg", precio: "S/.35.00" },
-      { nombre: "Ceviche de conchas negras", imagen: "Ceviche de conchas negras.jpeg", precio: "S/.35.00" },
-    ]
-  },
-  {
-    id: "tiraditos",
-    nombre: "Tiraditos",
-    slogan: "Sabor que se desliza",
-    items: [
-      { nombre: "Tiradito en salsa de ají amarillo", imagen: "Tiradito en salsa de ají amarillo.jpg", precio: "S/.28.00" },
-      { nombre: "Tiradito en dos tiempos", imagen: "Tiradito en dos tiempos.jpeg", precio: "S/.32.00" },
-    ]
-  },
-  {
-    id: "combinado-norteno",
-    nombre: "Combinado Norteño",
-    slogan: "Lo mejor del norte",
-    items: [
-      { nombre: "Combinado norteño", descripcion: "Ceviche de pescado del día + arroz con mariscos o chaufa de mariscos o jalea mixta", imagen: "Combinado norteño.webp", precio: "S/.35.00" },
-    ]
-  },
-  {
-    id: "sudados-parihuelas",
-    nombre: "Sudados y Parihuelas",
-    slogan: "El caldito que cura penas",
-    items: [
-      { nombre: "Sudado de filete", imagen: "Sudado de filete.jpg", precio: "S/.30.00" },
-      { nombre: "Sudado de cabrilla", imagen: "Sudado de cabrilla.jpeg", precio: "S/.32.00" },
-      { nombre: "Parihuela mixta especial", imagen: "Parihuela mixta especial.webp", precio: "S/.35.00" },
-      { nombre: "Parihuela de cabrilla", imagen: "Parihuela de cabrilla.jpeg", precio: "S/.32.00" },
-      { nombre: "Parihuela de filete", imagen: "Parihuela de filete.jpeg", precio: "S/.30.00" },
-      { nombre: "Chilcano especial", imagen: "Chilcano especial.webp", precio: "S/.20.00" },
-    ]
-  },
-  {
-    id: "chupes",
-    nombre: "Chupes",
-    slogan: "Tradición en cada cucharada",
-    items: [
-      { nombre: "Chupe de pescado", imagen: "Chupe de pescado.webp", precio: "S/.30.00" },
-      { nombre: "Chupe de cangrejo", imagen: "Chupe de cangrejo.jpeg", precio: "S/.30.00" },
-      { nombre: "Chupe de langostino", imagen: "Chupe de langostino.jpeg", precio: "S/.30.00" },
-    ]
-  },
-  {
-    id: "trilogias",
-    nombre: "Trilogías Marinas",
-    slogan: "Tres sabores, una experiencia",
-    items: [
-      { nombre: "Trilogía N° 1", descripcion: "Ceviche de pescado + arroz con mariscos + chicharrón mixto", imagen: "trilogia 1.webp", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 2", descripcion: "Ceviche de pescado + causa de langostinos + chicharrón mixto", imagen: "trilogia 2.jpg", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 3", descripcion: "Causa de langostinos + chicharrón de pescado + arroz con mariscos", imagen: "trilogia 3.jpeg", precio: "S/.43.00" },
-      { nombre: "Trilogía N° 4", descripcion: "Ceviche de pescado + chicharrón de calamar + arroz con mariscos", imagen: "trilogia 4.jpg", precio: "S/.45.00" },
-      { nombre: "Trilogía N° 5", descripcion: "Causa de langostinos + ceviche de pescado + arroz con mariscos", imagen: "trilogia 5.jpeg", precio: "S/.40.00" },
-      { nombre: "Trilogía N° 6", descripcion: "Causa de langostinos + chaufa de mariscos + chicharrón de pescado", imagen: "trilogia 6.jpeg", precio: "S/.43.00" },
-      { nombre: "Trilogía N° 7", descripcion: "Ceviche de pescado + chaufa de mariscos + chicharrón mixto", imagen: "trologia 7.png", precio: "S/.38.00" },
-      { nombre: "Trilogía N° 8", descripcion: "Ceviche de pescado + papa a la huancaína + arroz con pato", imagen: "trilogia 8.jpg", precio: "S/.45.00" },
-    ]
-  },
-  {
-    id: "duos",
-    nombre: "Duos Marinos",
-    slogan: "La pareja perfecta del mar",
-    items: [
-      { nombre: "Duo Marino 1", descripcion: "Ceviche de pescado del día + causa de pulpa de langostino", imagen: "Duo Marino 1.jpeg", precio: "S/.30.00" },
-      { nombre: "Duo Marino 2", descripcion: "Causa de pulpa de langostino + arroz con mariscos", imagen: "Duo Marino 2.jpeg", precio: "S/.32.00" },
-      { nombre: "Duo Marino 3", descripcion: "Causa de pulpa de langostino + chicharrón de pescado", imagen: "Duo Marino 3.jpeg", precio: "S/.32.00" },
-      { nombre: "Duo Marino 4", descripcion: "Ceviche de pescado + chicharrón de calamar", imagen: "Duo Marino 4.jpeg", precio: "S/.35.00" },
-      { nombre: "Duo Marino 5", descripcion: "Causa de pulpa de langostino + chaufa de mariscos", imagen: "Duo Marino 5.webp", precio: "S/.32.00" },
-      { nombre: "Duo Marino 6", descripcion: "Ceviche de pescado del día + arroz con mariscos", imagen: "duo marino 6.png", precio: "S/.30.00" },
-      { nombre: "Duo Marino 7", descripcion: "Ceviche de pescado del día + chicharrón mixto", imagen: "Duo Marino 7.jpeg", precio: "S/.30.00" },
-      { nombre: "Duo Marino 8", descripcion: "Chicharrón de pescado + arroz con mariscos", imagen: "Duo Marino 8.jpeg", precio: "S/.32.00" },
-      { nombre: "Duo Marino 9", descripcion: "Chicharrón de pescado + chaufa de mariscos", imagen: "Duo Marino 9.jpeg", precio: "S/.32.00" },
-      { nombre: "Duo Marino 10", descripcion: "Ceviche de pescado del día + chaufa de mariscos", imagen: "Duo Marino 10.jpeg", precio: "S/.30.00" },
-      { nombre: "Duo Marino 11", descripcion: "Ceviche de pescado del día + arroz con pato", imagen: "Duo Marino 11.jpeg", precio: "S/.35.00" },
-    ]
-  },
-  {
-    id: "chicharrones-jaleas",
-    nombre: "Chicharrones y Jaleas",
-    slogan: "Crujientes del océano",
-    items: [
-      { nombre: "Chicharrón de pota", imagen: "Chicharrón de pota.jpeg", precio: "S/.30.00" },
-      { nombre: "Chicharrón de pescado", imagen: "Chicharrón de pescado.jpeg", precio: "S/.30.00" },
-      { nombre: "Jalea de pescado", imagen: "Jalea de pescado.jpeg", precio: "S/.32.00" },
-      { nombre: "Chicharrón de calamar", imagen: "Chicharrón de calamar.webp", precio: "S/.40.00" },
-      { nombre: "Chicharrón de pescado con calamar", imagen: "Chicharrón de pescado con calamar.webp", precio: "S/.40.00" },
-      { nombre: "Chicharrón mixto", imagen: "Chicharrón mixto.webp", precio: "S/.34.00" },
-      { nombre: "Jalea mixta", imagen: "Jalea mixta.jpeg", precio: "S/.34.00" },
-      { nombre: "Jaleón norteño", descripcion: "Cabrilla frita, mariscos fritos, yuca frita, leche de tigre", imagen: "Jaleón norteño.jpeg", precio: "S/.45.00" },
-    ]
-  },
-  {
-    id: "arroces",
-    nombre: "Arroces",
-    slogan: "El grano que enamora",
-    items: [
-      { nombre: "Arroz con conchas negras", imagen: "Arroz con conchas negras.webp", precio: "S/.35.00" },
-      { nombre: "Arroz con mariscos", imagen: "Arroz con mariscos.jpg", precio: "S/.32.00" },
-      { nombre: "Chaufa de mariscos", imagen: "Chaufa de mariscos.webp", precio: "S/.32.00" },
-      { nombre: "Chaufa de pescado", imagen: "Chaufa de pescado.jpeg", precio: "S/.28.00" },
-      { nombre: "Chaufa amazónico", imagen: "Chaufa amazónico.jpeg", precio: "S/.28.00" },
-      { nombre: "Chaufa de langostinos", imagen: "Chaufa de langostinos.jpg", precio: "S/.30.00" },
-      { nombre: "Arroz verde en aroma de pato con filete de pescado", imagen: "Arroz verde en aroma de pato con filete de pescado.jpeg", precio: "S/.27.00" },
-      { nombre: "Chaufa de carne", imagen: "Chaufa de carne.jpeg", precio: "S/.24.00" },
-      { nombre: "Chaufa de pollo", imagen: "Chaufa de pollo.webp", precio: "S/.22.00" },
-    ]
-  },
-  {
-    id: "ronda-marina",
-    nombre: "Ronda Marina para 4 Personas",
-    slogan: "Para compartir en familia",
-    items: [
-      { nombre: "Ronda marina para 4 personas", descripcion: "Ceviche de pescado + arroz con mariscos + chaufa de mariscos + chicharrón mixto + leche de tigre o causa de pulpa de langostino", imagen: "Ronda marina para 4 personas.webp", precio: "S/.73.00" },
-    ]
-  },
-  {
-    id: "fetuccinis",
-    nombre: "Fetuccinis",
-    slogan: "Pastas con alma marina",
-    items: [
-      { nombre: "Fetuccini a la huancaína con lomo saltado", imagen: "Fetuccini a la huancaína con lomo saltado.jpeg", precio: "S/.30.00" },
-      { nombre: "Fetuccini a la huancaína con pollo a la parrilla", imagen: "Fetuccini a la huancaína con pollo a la parrilla.jpeg", precio: "S/.26.00" },
-      { nombre: "Fetuccini a la huancaína con saltado de pollo", imagen: "Fetuccini a la huancaína con saltado de pollo.jpeg", precio: "S/.26.00" },
-      { nombre: "Fetuccini a la huancaína con filete de pescado", imagen: "Fetuccini a la huancaína con filete de pescado.jpeg", precio: "S/.27.00" },
-      { nombre: "Fetuccini a la huancaína con salsa de mariscos", imagen: "Fetuccini a la huancaína con salsa de mariscos.jpeg", precio: "S/.35.00" },
-    ]
-  },
-  {
-    id: "criollos",
-    nombre: "Criollos y Norteños",
-    slogan: "Sazón de la tierra",
-    items: [
-      { nombre: "Arroz con pato", imagen: "Arroz con pato.webp", precio: "S/.27.00" },
-      { nombre: "Seco de pato con frijoles", imagen: "Seco de pato con frijoles.webp", precio: "S/.28.00" },
-      { nombre: "Tacu-tacu con lomo saltado", imagen: "Tacu-tacu con lomo saltado.jpeg", precio: "S/.33.00" },
-      { nombre: "Tacu-tacu saltado de pollo", imagen: "Tacu-tacu saltado de pollo.webp", precio: "S/.30.00" },
-      { nombre: "Tacu-tacu en salsa de mariscos", imagen: "Tacu-tacu en salsa de mariscos.jpeg", precio: "S/.35.00" },
-      { nombre: "Lomo saltado", imagen: "Lomo saltado.jpg", precio: "S/.25.00" },
-      { nombre: "Saltado de pollo", imagen: "Saltado de pollo.webp", precio: "S/.23.00" },
-      { nombre: "Tallarín saltado de carne", imagen: "Tallarín saltado de carne.jpeg", precio: "S/.25.00" },
-      { nombre: "Tallarín saltado de pollo", imagen: "Tallarín saltado de pollo.jpeg", precio: "S/.23.00" },
-    ]
-  },
-  {
-    id: "pescado-frito",
-    nombre: "Pescado Frito y Filete",
-    slogan: "Directo del mar a tu mesa",
-    items: [
-      { nombre: "Cabrilla frita con yucas, arroz y ensalada", imagen: "Cabrilla frita con yucas, arroz y ensalada.webp", precio: "S/.32.00" },
-      { nombre: "Filete de pescado frito con yucas, arroz y ensalada", imagen: "Filete de pescado frito con yucas, arroz y ensalada.jpeg", precio: "S/.27.00" },
-    ]
-  },
-];
-
-/* ═══════════════════════════════════════════
-   CART
-   ═══════════════════════════════════════════ */
 
 interface CartItem {
   nombre: string;
@@ -208,14 +103,44 @@ interface CartItem {
   cantidad: number;
 }
 
-/* ═══════════════════════════════════════════
-   MAIN APP
-   ═══════════════════════════════════════════ */
-
 export default function App() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [cats, dishes] = await Promise.all([
+          fetchSheetData<SheetCategory>('Categorías'),
+          fetchSheetData<SheetDish>('Platos')
+        ]);
+
+        const formattedCategories: Category[] = cats.map(c => ({
+          id: c.nombre.toLowerCase().replace(/\s+/g, '-'),
+          nombre: c.nombre,
+          items: dishes
+            .filter(d => d.categoría === c.nombre)
+            .map(d => ({
+              nombre: d['nombre del plato'],
+              descripcion: d.descripción,
+              precio: d.precio,
+              imagen: d['URL de imagen'] || LOCAL_IMAGES[d['nombre del plato']] || null
+            }))
+        }));
+
+        setCategories(formattedCategories);
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   const cartCount = useMemo(() => cart.reduce((acc, item) => acc + item.cantidad, 0), [cart]);
 
@@ -249,7 +174,6 @@ export default function App() {
 
   const calculateTotal = () => {
     return cart.reduce((acc, item) => {
-      // Remove everything before the first digit to avoid the '.' in 'S/.'
       const cleanPrice = item.precio.replace(/^[^\d]*/, '');
       const num = parseFloat(cleanPrice) || 0;
       return acc + num * item.cantidad;
@@ -273,18 +197,23 @@ export default function App() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white">
+        <Loader2 className="w-12 h-12 text-isla-teal animate-spin mb-4" />
+        <p className="font-slogan text-isla-teal font-bold tracking-widest uppercase text-xs">Cargando delicias...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-md mx-auto bg-white min-h-screen relative shadow-2xl overflow-hidden flex flex-col font-sans">
-
-      {/* ─── HEADER ─── */}
       <header className="sticky top-0 bg-white/95 backdrop-blur-md z-50 px-5 py-4 flex justify-between items-center border-b border-gray-100">
         <div className="flex flex-col items-start">
           <h1 className="font-title text-[28px] text-isla-teal leading-none tracking-wide">La Isla del Lobo</h1>
           <span className="font-slogan text-[11px] text-isla-orange font-bold tracking-wider mt-0.5">Sabor que atrapa</span>
         </div>
-
         <div className="flex items-center gap-2">
-          {/* Location Button */}
           <motion.a
             href="https://maps.google.com"
             target="_blank"
@@ -294,7 +223,6 @@ export default function App() {
           >
             <MapPin size={22} />
           </motion.a>
-
           <motion.div
             onClick={() => cartCount > 0 && setShowSummary(true)}
             whileTap={{ scale: 0.95 }}
@@ -310,7 +238,6 @@ export default function App() {
         </div>
       </header>
 
-      {/* ─── MARQUEE ─── */}
       <div className="w-full bg-isla-teal py-2 overflow-hidden flex items-center">
         <div className="animate-marquee flex gap-6 text-white font-slogan font-bold text-[11px] tracking-widest uppercase whitespace-nowrap">
           {[...Array(10)].map((_, i) => (
@@ -319,7 +246,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* ─── HERO ─── */}
       <div className="px-5 pt-5 pb-3">
         <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-isla-teal via-[#0e8d9b] to-[#0a6f7a] p-7 shadow-xl">
           <div className="absolute top-3 right-3 text-5xl opacity-20">🐺</div>
@@ -333,10 +259,9 @@ export default function App() {
         </div>
       </div>
 
-      {/* ─── CATEGORY NAV PILLS ─── */}
       <div className="px-5 py-3 overflow-x-auto no-scrollbar">
         <div className="flex gap-2 w-max">
-          {menuCategories.map(cat => (
+          {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => scrollToCategory(cat.id)}
@@ -352,11 +277,9 @@ export default function App() {
         </div>
       </div>
 
-      {/* ─── MENU ─── */}
       <main className="flex-1 overflow-y-auto pb-32 px-5">
-        {menuCategories.map(cat => (
+        {categories.map(cat => (
           <section key={cat.id} id={`cat-${cat.id}`} className="mb-10 scroll-mt-28">
-            {/* Category heading */}
             <div className="mb-5 pt-2">
               <div className="flex items-center gap-2 mb-1">
                 <Anchor className="text-isla-teal wave-icon" size={22} />
@@ -364,14 +287,8 @@ export default function App() {
                   {cat.nombre}
                 </h3>
               </div>
-              {cat.slogan && (
-                <p className="font-slogan text-isla-orange text-[13px] font-bold ml-8 tracking-wide">
-                  {cat.slogan}
-                </p>
-              )}
             </div>
 
-            {/* Dish list (Grid Layout) */}
             <div className="grid grid-cols-2 gap-4">
               {cat.items.map((dish, idx) => (
                 <motion.div
@@ -379,16 +296,18 @@ export default function App() {
                   whileHover={{ y: -4 }}
                   className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:border-isla-teal/30 hover:shadow-md transition-all duration-200"
                 >
-                  {/* Dish Image */}
                   <div className="bg-white aspect-square flex items-center justify-center relative overflow-hidden">
                     {dish.imagen ? (
-                      <img src={`/${dish.imagen}`} alt={dish.nombre} className="w-full h-full object-contain" />
+                      <img 
+                        src={dish.imagen.startsWith('http') ? dish.imagen : `/${dish.imagen}`} 
+                        alt={dish.nombre} 
+                        className="w-full h-full object-contain" 
+                      />
                     ) : (
                       <span className="text-gray-400 text-[11px] uppercase tracking-wider font-semibold">Acá va imagen</span>
                     )}
                   </div>
                   
-                  {/* Dish info */}
                   <div className="p-4 flex flex-col flex-1">
                     <h4 className="font-bold text-isla-dark text-[13px] leading-tight mb-1">
                       {dish.nombre}
@@ -399,14 +318,10 @@ export default function App() {
                       </p>
                     )}
                     <div className="flex-1"></div>
-
                     <div className="flex items-center justify-between mt-2">
-                      {/* Price */}
                       <span className="font-bold text-isla-dark text-[16px] whitespace-nowrap">
                         {dish.precio}
                       </span>
-
-                      {/* Add button */}
                       <motion.button
                         whileTap={{ scale: 0.8 }}
                         onClick={() => addToCart(dish)}
@@ -419,11 +334,9 @@ export default function App() {
                 </motion.div>
               ))}
             </div>
-            <p className="text-[10px] text-gray-400 text-center italic mt-4">* Todas las imágenes son referenciales</p>
           </section>
         ))}
 
-        {/* ─── FOOTER ─── */}
         <footer className="mt-8 pt-8 pb-10 border-t border-gray-200 flex flex-col items-center justify-center">
           <div className="flex gap-4 mb-4">
             <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-isla-teal shadow-sm border border-gray-100 hover:bg-isla-teal hover:text-white transition-colors">
@@ -441,7 +354,6 @@ export default function App() {
         </footer>
       </main>
 
-      {/* ─── FLOATING CART BAR ─── */}
       <AnimatePresence>
         {cartCount > 0 && !showSummary && (
           <motion.div
@@ -473,7 +385,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* ─── ORDER SUMMARY MODAL ─── */}
       <AnimatePresence>
         {showSummary && (
           <motion.div
@@ -497,7 +408,6 @@ export default function App() {
                   <X size={20} className="text-gray-400" />
                 </button>
               </div>
-
               <div className="space-y-3 mb-8">
                 {cart.map(item => (
                   <div
@@ -526,14 +436,12 @@ export default function App() {
                   </div>
                 ))}
               </div>
-
               <div className="border-t border-dashed border-gray-200 pt-6 mb-8">
                 <div className="flex justify-between items-center">
                   <h3 className="text-xl font-bold text-isla-dark">Total a pagar</h3>
                   <h3 className="text-xl font-bold text-isla-teal">S/.{calculateTotal().toFixed(2)}</h3>
                 </div>
               </div>
-
               <button
                 onClick={sendToWhatsApp}
                 className="w-full bg-[#25D366] text-white py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-green-100 hover:scale-[1.02] transition-transform font-bold"

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, Instagram, Twitter, MapPin, Loader2 } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, MapPin, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { fetchSheetData, SheetDish, SheetCategory } from './services/googleSheets';
 
@@ -109,6 +109,7 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showSummary, setShowSummary] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -215,7 +216,16 @@ export default function App() {
         </div>
         <div className="flex items-center gap-2">
           <motion.a
-            href="https://maps.google.com"
+            href="https://www.facebook.com/LAISLADELOBO"
+            target="_blank"
+            rel="noopener noreferrer"
+            whileTap={{ scale: 0.95 }}
+            className="w-11 h-11 bg-isla-teal/10 rounded-full flex items-center justify-center text-isla-teal cursor-pointer"
+          >
+            <Facebook size={22} />
+          </motion.a>
+          <motion.a
+            href="https://maps.app.goo.gl/Cebnnt1QLt2iVW6f9"
             target="_blank"
             rel="noopener noreferrer"
             whileTap={{ scale: 0.95 }}
@@ -247,15 +257,12 @@ export default function App() {
       </div>
 
       <div className="px-5 pt-5 pb-3">
-        <div className="relative w-full rounded-3xl overflow-hidden bg-gradient-to-br from-isla-teal via-[#0e8d9b] to-[#0a6f7a] p-7 shadow-xl">
-          <div className="absolute top-3 right-3 text-5xl opacity-20">🐺</div>
-          <div className="absolute bottom-2 left-4 text-3xl opacity-10">🌊</div>
-          <h2 className="font-title text-white text-5xl leading-[0.95] drop-shadow-lg mb-2">
-            La Isla<br />del Lobo
-          </h2>
-          <p className="font-slogan text-isla-orange font-bold text-sm tracking-wide">
-            El verdadero sabor a mar
-          </p>
+        <div className="relative w-full rounded-3xl overflow-hidden shadow-xl aspect-[2/1] bg-gray-100">
+          <img 
+            src="/banner.png" 
+            alt="La Isla del Lobo" 
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
 
@@ -296,12 +303,15 @@ export default function App() {
                   whileHover={{ y: -4 }}
                   className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:border-isla-teal/30 hover:shadow-md transition-all duration-200"
                 >
-                  <div className="bg-white aspect-square flex items-center justify-center relative overflow-hidden">
+                  <div 
+                    className="bg-white aspect-square flex items-center justify-center relative overflow-hidden cursor-pointer group"
+                    onClick={() => dish.imagen && setSelectedImage(dish.imagen.startsWith('http') ? dish.imagen : `/${dish.imagen}`)}
+                  >
                     {dish.imagen ? (
                       <img 
                         src={dish.imagen.startsWith('http') ? dish.imagen : `/${dish.imagen}`} 
                         alt={dish.nombre} 
-                        className="w-full h-full object-contain" 
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" 
                       />
                     ) : (
                       <span className="text-gray-400 text-[11px] uppercase tracking-wider font-semibold">Acá va imagen</span>
@@ -338,20 +348,25 @@ export default function App() {
         ))}
 
         <footer className="mt-8 pt-8 pb-10 border-t border-gray-200 flex flex-col items-center justify-center">
-          <div className="flex gap-4 mb-4">
-            <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-isla-teal shadow-sm border border-gray-100 hover:bg-isla-teal hover:text-white transition-colors">
-              <Facebook size={20} />
-            </a>
-            <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-isla-teal shadow-sm border border-gray-100 hover:bg-isla-teal hover:text-white transition-colors">
-              <Instagram size={20} />
-            </a>
-            <a href="#" className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-isla-teal shadow-sm border border-gray-100 hover:bg-isla-teal hover:text-white transition-colors">
-              <Twitter size={20} />
-            </a>
-          </div>
-          <p className="font-title text-2xl text-isla-teal mb-1">La Isla del Lobo</p>
+
+          <p className="font-title text-2xl text-isla-teal mb-4">La Isla del Lobo</p>
+          <img src="/footer.jpeg" alt="Logo La Isla del Lobo" className="w-32 h-32 object-contain mb-6 rounded-2xl shadow-sm border border-gray-100" />
           <p className="text-[11px] text-gray-400 font-medium">© 2026 Todos los derechos reservados.</p>
         </footer>
+
+        <div className="bg-isla-dark py-6 flex flex-col items-center justify-center">
+          <p className="text-[10px] font-bold tracking-[0.2em] uppercase mb-1 opacity-50 text-white/50">Digital Menu Experience</p>
+          <motion.a 
+            href="https://tymasolutions.lat/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 font-bold text-sm tracking-tight group cursor-pointer"
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-white group-hover:text-[#00BFFF] transition-colors duration-200">Hecho por Tyma</span>
+            <span className="text-[#00BFFF] group-hover:text-white transition-colors duration-200">Solutions</span>
+          </motion.a>
+        </div>
       </main>
 
       <AnimatePresence>
@@ -453,6 +468,38 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setSelectedImage(null)}
+          >
+            <button
+              className="absolute top-6 right-6 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImage(null);
+              }}
+            >
+              <X size={28} />
+            </button>
+            <motion.img
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              src={selectedImage}
+              alt="Plato ampliado"
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </div>
   );
 }

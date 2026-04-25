@@ -249,7 +249,9 @@ export default function App() {
 
   const calculateTotal = () => {
     return cart.reduce((acc, item) => {
-      const num = parseFloat(item.precio.replace(/[^0-9.]/g, '')) || 0;
+      // Remove everything before the first digit to avoid the '.' in 'S/.'
+      const cleanPrice = item.precio.replace(/^[^\d]*/, '');
+      const num = parseFloat(cleanPrice) || 0;
       return acc + num * item.cantidad;
     }, 0);
   };
@@ -378,9 +380,9 @@ export default function App() {
                   className="bg-white rounded-[2rem] overflow-hidden flex flex-col shadow-sm border border-gray-100 hover:border-isla-teal/30 hover:shadow-md transition-all duration-200"
                 >
                   {/* Dish Image */}
-                  <div className="bg-gray-100 aspect-[4/3] flex items-center justify-center relative overflow-hidden">
+                  <div className="bg-white aspect-square flex items-center justify-center relative overflow-hidden">
                     {dish.imagen ? (
-                      <img src={`/${dish.imagen}`} alt={dish.nombre} className="w-full h-full object-cover" />
+                      <img src={`/${dish.imagen}`} alt={dish.nombre} className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-gray-400 text-[11px] uppercase tracking-wider font-semibold">Acá va imagen</span>
                     )}

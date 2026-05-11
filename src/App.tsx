@@ -33,8 +33,8 @@ const LOCAL_IMAGES: Record<string, string> = {
   "Trilogía N° 4": "trilogia 4.jpg",
   "Trilogía N° 5": "trilogia 5.jpeg",
   "Trilogía N° 6": "trilogia 6.jpg",
-  "Trilogía N° 7": "trilogia 7.jpeg",
-  "Trilogía N° 8": "trilogia 8.jpeg",
+  "Trilogía N° 7": "trilogia 7.jpg",
+  "Trilogía N° 8": "trilogia 8.jpg",
   "Trilogía N° 9": "Trilogia 9.jpg",
   "Duo Marino 1": "Duo Marino 1.jpeg",
   "Duo Marino 2": "Duo Marino 2.jpeg",
@@ -127,7 +127,7 @@ export default function App() {
               nombre: d['nombre del plato'],
               descripcion: d.descripción,
               precio: d.precio,
-              imagen: d['URL de imagen'] || LOCAL_IMAGES[d['nombre del plato']] || null
+              imagen: LOCAL_IMAGES[d['nombre del plato']] || d['URL de imagen'] || null
             }))
         }));
 

@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, MapPin, Loader2 } from 'lucide-react';
+import { ShoppingBag, Plus, Minus, ChevronRight, X, Trash2, Anchor, Facebook, MapPin, Loader2, Gift, Star } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { fetchSheetData, SheetDish, SheetCategory } from './services/googleSheets';
+import { fetchSheetData, submitSheetData, SheetDish, SheetCategory } from './services/googleSheets';
 
 const WHATSAPP_NUMBER = "51923494953";
 
@@ -110,6 +110,28 @@ export default function App() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  // States for Birthday Form
+  const [showBirthdayForm, setShowBirthdayForm] = useState(false);
+  const [isSubmittingBirthday, setIsSubmittingBirthday] = useState(false);
+  const [birthdaySuccess, setBirthdaySuccess] = useState(false);
+  const [birthdayData, setBirthdayData] = useState({
+    nombre: '',
+    telefono: '',
+    fechaNacimiento: '',
+    distrito: '',
+    correo: ''
+  });
+
+  // States for Review Form
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [reviewData, setReviewData] = useState({
+    estrellasMozo: 0,
+    estrellasComida: 0,
+    comentario: ''
+  });
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -197,6 +219,59 @@ export default function App() {
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const handleBirthdaySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingBirthday(true);
+    const success = await submitSheetData('Cumpleaños', {
+      timestamp: new Date().toLocaleString('es-PE'),
+      nombre: birthdayData.nombre,
+      telefono: birthdayData.telefono,
+      fechaNacimiento: birthdayData.fechaNacimiento,
+      distrito: birthdayData.distrito,
+      correo: birthdayData.correo || 'No indicado'
+    });
+    
+    setIsSubmittingBirthday(false);
+    if (success) {
+      setBirthdaySuccess(true);
+      setTimeout(() => {
+        setShowBirthdayForm(false);
+        setBirthdaySuccess(false);
+        setBirthdayData({ nombre: '', telefono: '', fechaNacimiento: '', distrito: '', correo: '' });
+      }, 3000);
+    } else {
+      alert("Hubo un error al enviar tus datos. Por favor, inténtalo de nuevo.");
+    }
+  };
+
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (reviewData.estrellasMozo === 0 || reviewData.estrellasComida === 0) {
+      alert("Por favor califica ambas opciones con estrellas.");
+      return;
+    }
+
+    setIsSubmittingReview(true);
+    const success = await submitSheetData('Reseñas', {
+      timestamp: new Date().toLocaleString('es-PE'),
+      estrellasMozo: reviewData.estrellasMozo,
+      estrellasComida: reviewData.estrellasComida,
+      comentario: reviewData.comentario || 'Sin comentarios'
+    });
+    
+    setIsSubmittingReview(false);
+    if (success) {
+      setReviewSuccess(true);
+      setTimeout(() => {
+        setShowReviewForm(false);
+        setReviewSuccess(false);
+        setReviewData({ estrellasMozo: 0, estrellasComida: 0, comentario: '' });
+      }, 3000);
+    } else {
+      alert("Hubo un error al enviar tu reseña. Por favor, inténtalo de nuevo.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-white">
@@ -255,7 +330,24 @@ export default function App() {
         </div>
       </div>
 
-      <div className="px-5 pt-5 pb-3">
+      <div className="px-5 pt-4">
+        <motion.button 
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.95 }}
+          animate={{ 
+            boxShadow: ["0px 0px 0px 0px rgba(249,115,22,0.6)", "0px 0px 20px 8px rgba(249,115,22,0)", "0px 0px 0px 0px rgba(249,115,22,0)"] 
+          }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+          onClick={() => setShowBirthdayForm(true)}
+          className="w-full bg-gradient-to-r from-orange-400 via-isla-orange to-orange-500 text-white py-3 rounded-2xl flex items-center justify-center gap-2 font-black text-[11px] sm:text-xs uppercase tracking-wider border border-orange-300 relative overflow-hidden group"
+        >
+          <div className="absolute inset-0 shimmer opacity-30 mix-blend-overlay"></div>
+          <Gift size={18} className="animate-bounce" />
+          <span>¡Registra tu cumpleaños <span className="text-yellow-200">aquí</span> y recibe una sorpresa!</span>
+        </motion.button>
+      </div>
+
+      <div className="px-5 pt-4 pb-3">
         <div className="relative w-full rounded-3xl overflow-hidden shadow-xl aspect-[2/1] bg-gray-100">
           <img 
             src="/banner.png" 
@@ -345,6 +437,19 @@ export default function App() {
             </div>
           </section>
         ))}
+
+        <section className="mt-8 mb-4 border border-gray-100 bg-gray-50 rounded-3xl p-5 text-center shadow-sm">
+          <h3 className="font-title text-isla-teal text-[22px] leading-tight mb-2">¿Cómo estuvo todo?</h3>
+          <p className="text-[11px] text-gray-500 mb-4 px-4">Ayúdanos a mejorar calificando tu experiencia con nosotros</p>
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowReviewForm(true)}
+            className="bg-isla-teal text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-md shadow-isla-teal/20 flex items-center justify-center gap-2 mx-auto w-full"
+          >
+            <Star size={18} className="fill-white" />
+            Reseña nuestra comida
+          </motion.button>
+        </section>
 
         <footer className="mt-8 pt-8 pb-10 border-t border-gray-200 flex flex-col items-center justify-center">
 
@@ -495,6 +600,162 @@ export default function App() {
               className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showBirthdayForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setShowBirthdayForm(false)}
+                className="absolute top-4 right-4 w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center"
+              >
+                <X size={18} className="text-gray-400" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mb-5 mt-2">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                  <Gift size={24} className="text-isla-orange" />
+                </div>
+                <h2 className="font-title text-2xl text-isla-dark leading-none mb-2">¡Tu Cumpleaños!</h2>
+                <p className="text-xs text-gray-500">Déjanos tus datos para enviarte una sorpresa en tu día especial.</p>
+              </div>
+
+              {birthdaySuccess ? (
+                <div className="bg-green-50 text-green-600 p-4 rounded-2xl text-center text-sm font-bold border border-green-100">
+                  ¡Gracias! Tus datos han sido guardados.
+                </div>
+              ) : (
+                <form onSubmit={handleBirthdaySubmit} className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Nombre Completo</label>
+                    <input required type="text" value={birthdayData.nombre} onChange={e => setBirthdayData({...birthdayData, nombre: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-isla-orange/50 transition-colors" placeholder="Ej. Juan Pérez" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Teléfono</label>
+                    <input required type="tel" minLength={9} maxLength={11} pattern="[0-9]*" value={birthdayData.telefono} onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setBirthdayData({...birthdayData, telefono: val});
+                    }} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-isla-orange/50 transition-colors" placeholder="Ej. 987654321" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Fecha de Nacimiento</label>
+                    <input required type="date" value={birthdayData.fechaNacimiento} onChange={e => setBirthdayData({...birthdayData, fechaNacimiento: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-isla-orange/50 transition-colors text-gray-700" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Distrito</label>
+                    <input required type="text" value={birthdayData.distrito} onChange={e => setBirthdayData({...birthdayData, distrito: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-isla-orange/50 transition-colors" placeholder="Ej. Miraflores" />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Correo Electrónico (Opcional)</label>
+                    <input type="email" value={birthdayData.correo} onChange={e => setBirthdayData({...birthdayData, correo: e.target.value})} className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-isla-orange/50 transition-colors" placeholder="correo@ejemplo.com" />
+                  </div>
+                  
+                  <button disabled={isSubmittingBirthday} type="submit" className="w-full bg-isla-orange text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-orange-200 mt-2 disabled:opacity-70 flex justify-center items-center">
+                    {isSubmittingBirthday ? <Loader2 size={18} className="animate-spin" /> : "Guardar mis datos"}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReviewForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white w-full max-w-sm rounded-[2rem] p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto"
+            >
+              <button
+                onClick={() => setShowReviewForm(false)}
+                className="absolute top-4 right-4 w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center"
+              >
+                <X size={18} className="text-gray-400" />
+              </button>
+
+              <div className="flex flex-col items-center text-center mb-5 mt-2">
+                <div className="w-12 h-12 bg-teal-50 rounded-full flex items-center justify-center mb-3">
+                  <Star size={24} className="text-isla-teal fill-isla-teal" />
+                </div>
+                <h2 className="font-title text-2xl text-isla-dark leading-none mb-2">¡Calificanos!</h2>
+                <p className="text-xs text-gray-500">Tu opinión es muy importante para nosotros.</p>
+              </div>
+
+              {reviewSuccess ? (
+                <div className="bg-green-50 text-green-600 p-4 rounded-2xl text-center text-sm font-bold border border-green-100">
+                  ¡Gracias por tu reseña! Nos ayuda a mejorar.
+                </div>
+              ) : (
+                <form onSubmit={handleReviewSubmit} className="space-y-5">
+                  
+                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col items-center">
+                    <p className="text-xs font-bold text-gray-500 mb-2">Atención del Mozo</p>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(star => (
+                        <button 
+                          key={star} type="button" 
+                          onClick={() => setReviewData({...reviewData, estrellasMozo: star})}
+                          className="p-1 transition-transform hover:scale-110"
+                        >
+                          <Star size={28} className={reviewData.estrellasMozo >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 flex flex-col items-center">
+                    <p className="text-xs font-bold text-gray-500 mb-2">Calidad de la Comida</p>
+                    <div className="flex gap-1">
+                      {[1,2,3,4,5].map(star => (
+                        <button 
+                          key={star} type="button" 
+                          onClick={() => setReviewData({...reviewData, estrellasComida: star})}
+                          className="p-1 transition-transform hover:scale-110"
+                        >
+                          <Star size={28} className={reviewData.estrellasComida >= star ? "text-yellow-400 fill-yellow-400" : "text-gray-300"} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Comentario (Opcional)</label>
+                    <textarea 
+                      rows={3} 
+                      value={reviewData.comentario} 
+                      onChange={e => setReviewData({...reviewData, comentario: e.target.value})} 
+                      className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-isla-teal/50 transition-colors resize-none mt-1" 
+                      placeholder="Cuéntanos más sobre tu experiencia..." 
+                    />
+                  </div>
+                  
+                  <button disabled={isSubmittingReview} type="submit" className="w-full bg-isla-teal text-white py-3 rounded-xl font-bold text-sm shadow-md shadow-isla-teal/20 mt-2 disabled:opacity-70 flex justify-center items-center">
+                    {isSubmittingReview ? <Loader2 size={18} className="animate-spin" /> : "Enviar Reseña"}
+                  </button>
+                </form>
+              )}
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
